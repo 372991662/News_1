@@ -1,0 +1,9 @@
+.gradle
+.idea
+build
+*.iml
+/local.properties
+.svn/
+app/libs/
+app/src/main/res/drawable/
+libs/
