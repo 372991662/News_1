@@ -1,6 +1,8 @@
 package com.atguigu.yangyuanyuan.news.activity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -23,6 +25,9 @@ public class NewsDetailActivity extends Activity implements View.OnClickListener
     private WebView webView;
     private ProgressBar pb_loading;
     private String url;
+    private int temp = 2;
+    private int textSize = temp;
+    private WebSettings settings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,9 +40,15 @@ public class NewsDetailActivity extends Activity implements View.OnClickListener
         Intent intent = getIntent();
         url = intent.getStringExtra("url");
 
-        WebSettings settings = webView.getSettings();
+        settings = webView.getSettings();
         //设置支持javascript
         settings.setJavaScriptEnabled(true);
+        //设置双击变大
+        settings.setUseWideViewPort(true);
+
+        settings.setTextZoom(100);
+        //增加缩放按钮
+        settings.setBuiltInZoomControls(true);
         //设置页面加载页面结束监听
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -78,11 +89,60 @@ public class NewsDetailActivity extends Activity implements View.OnClickListener
             finish();
         }
         if (v == ib_textsize) {
-            Toast.makeText(NewsDetailActivity.this, "设置文字大小", Toast.LENGTH_SHORT).show();
+            showChangTextSizeDialog();
         }
         if (v == ib_share) {
             Toast.makeText(NewsDetailActivity.this, "分享链接", Toast.LENGTH_SHORT).show();
 
         }
+    }
+
+
+    private void showChangTextSizeDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("设置文字大小");
+        String[] items = new String[]{"超大字体", "大字体", "正常", "小字体", "超小字体"};
+        builder.setSingleChoiceItems(items, textSize, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                temp = which;
+            }
+        });
+
+        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                textSize = temp;
+                //改变字体大小
+                changeTextSize();
+            }
+        });
+
+        builder.setNegativeButton("取消", null);
+        builder.show();
+    }
+
+    private void changeTextSize() {
+        switch (textSize) {
+            case  0:
+                settings.setTextZoom(200);
+                break;
+            case  1:
+                settings.setTextZoom(150);
+                break;
+            case  2:
+                settings.setTextZoom(100);
+                break;
+            case  3:
+                settings.setTextZoom(75);
+                break;
+            case  4:
+                settings.setTextZoom(50);
+                break;
+            case  5:
+                settings.setTextZoom(25);
+                break;
+        }
+
     }
 }
