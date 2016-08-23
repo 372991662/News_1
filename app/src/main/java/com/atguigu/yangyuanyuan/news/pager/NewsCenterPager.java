@@ -75,7 +75,7 @@ public class NewsCenterPager extends BaseViewPager {
         ib_basepager_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MainActivity mainActivity = (MainActivity) mContext;
+                MainActivity mainActivity = (MainActivity)mContext;
                 SlidingMenu slidingMenu = mainActivity.getSlidingMenu();
                 slidingMenu.toggle();
             }
@@ -129,7 +129,7 @@ public class NewsCenterPager extends BaseViewPager {
         detialBasePagers = new ArrayList<>();
         //通过构造将第0条数据传过去
         detialBasePagers.add(new NewsDetailsPager(mContext, menuData.get(0)));
-        detialBasePagers.add(new TopicPager(mContext));
+        detialBasePagers.add(new TopicPager(mContext, menuData.get(0)));
         detialBasePagers.add(new PhotosPager(mContext));
         detialBasePagers.add(new InteractPager(mContext));
 

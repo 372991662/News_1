@@ -4,7 +4,7 @@
                 android:layout_height="180dp">
 
 
-    <android.support.v4.view.ViewPager
+    <com.atguigu.yangyuanyuan.news.view.HorizontalScrollViewPager
         android:id="@+id/vp_newsdetails"
         android:layout_width="match_parent"
         android:layout_height="180dp"/>

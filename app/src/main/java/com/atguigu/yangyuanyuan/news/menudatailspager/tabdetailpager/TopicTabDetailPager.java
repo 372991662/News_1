@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,9 +21,10 @@ import com.atguigu.yangyuanyuan.news.domain.TableDetailPagerBean;
 import com.atguigu.yangyuanyuan.news.utils.CacheUtils;
 import com.atguigu.yangyuanyuan.news.utils.Constants;
 import com.atguigu.yangyuanyuan.news.utils.DensityUtil;
-import com.atguigu.yangyuanyuan.news.view.HorizontalScrollViewPager;
-import com.example.administrator.refreshlistview.RefreshListView;
 import com.google.gson.Gson;
+import com.handmark.pulltorefresh.library.PullToRefreshBase;
+import com.handmark.pulltorefresh.library.PullToRefreshListView;
+import com.handmark.pulltorefresh.library.extras.SoundPullEventListener;
 
 import org.xutils.common.Callback;
 import org.xutils.http.RequestParams;
@@ -35,12 +37,11 @@ import java.util.List;
  */
 
 //页签详情页面
-public class TabDetailPager extends MenuDetailBasePager {
-    private HorizontalScrollViewPager vp_newsdetails;
+public class TopicTabDetailPager extends MenuDetailBasePager {
+    private ViewPager vp_newsdetails;
     private TextView tv_title;
     private LinearLayout ll_newsdetails;
-    private RefreshListView  lv_newsdetails;
-
+    private PullToRefreshListView pull_refresh_listview;
 
     private int lastPosition;
     private NewsCenterPagerBean.DataBean.ChildrenBean mChilderBean = new NewsCenterPagerBean
@@ -55,8 +56,9 @@ public class TabDetailPager extends MenuDetailBasePager {
     //加载更多数据成功了
     private boolean isLoadeMore = false;
     private NewsListViewAdapter adapter;
+    private ListView listView;
 
-    public TabDetailPager(Context context, NewsCenterPagerBean.DataBean.ChildrenBean childrenBean) {
+    public TopicTabDetailPager(Context context, NewsCenterPagerBean.DataBean.ChildrenBean childrenBean) {
         super(context);
         this.mChilderBean = childrenBean;
     }
@@ -64,33 +66,45 @@ public class TabDetailPager extends MenuDetailBasePager {
 
     @Override
     public View initView() {
-        View view = View.inflate(mContext, R.layout.tabdetail_pager, null);
-        lv_newsdetails = (RefreshListView) view.findViewById(R.id.lv_newsdetails);
+        View view = View.inflate(mContext, R.layout.topic_tabdetail_pager, null);
+        pull_refresh_listview = (PullToRefreshListView) view.findViewById(R.id.pull_refresh_listview);
+        //从控件中得到listview
+        listView = pull_refresh_listview.getRefreshableView();
 
         View viewHeader = View.inflate(mContext, R.layout.news_list_header, null);
-        vp_newsdetails = (HorizontalScrollViewPager) viewHeader.findViewById(R.id.vp_newsdetails);
+        vp_newsdetails = (ViewPager) viewHeader.findViewById(R.id.vp_newsdetails);
         tv_title = (TextView) viewHeader.findViewById(R.id.tv_title);
         ll_newsdetails = (LinearLayout) viewHeader.findViewById(R.id.ll_newsdetails);
 
+
+        /**
+         * Add Sound Event Listener
+         */
+        SoundPullEventListener<ListView> soundListener = new SoundPullEventListener<ListView>(mContext);
+        soundListener.addSoundEvent(PullToRefreshBase.State.PULL_TO_REFRESH, R.raw.pull_event);
+        soundListener.addSoundEvent(PullToRefreshBase.State.RESET, R.raw.reset_sound);
+        soundListener.addSoundEvent(PullToRefreshBase.State.REFRESHING, R.raw.refreshing_sound);
+        pull_refresh_listview.setOnPullEventListener(soundListener);
+
         //添加listview的头部
-        //lv_newsdetails.addHeaderView(viewHeader);
-        lv_newsdetails.addTopNews(viewHeader);
+        listView.addHeaderView(viewHeader);
 
         //监听控件刷新
-        lv_newsdetails.setOnRefreshListener(new RefreshListView.OnRefreshListener() {
-            //上拉刷新
+        pull_refresh_listview.setOnRefreshListener(new PullToRefreshBase.OnRefreshListener2<ListView>() {
             @Override
-            public void onPullDownlRefresh() {
+            public void onPullDownToRefresh(PullToRefreshBase<ListView> refreshView) {
                 getDataFromNet();
             }
 
-            //在加载更多
             @Override
-            public void onLoadMore() {
+            public void onPullUpToRefresh(PullToRefreshBase<ListView> refreshView) {
                 if (TextUtils.isEmpty(moreUrl)) {
+                    //没有加载更多
                     Toast.makeText(mContext, "没有更多数据", Toast.LENGTH_SHORT).show();
-                    lv_newsdetails.setOnRefreshFinish(false);
+                    //隐藏
+                    pull_refresh_listview.onRefreshComplete();
                 } else {
+                    //有加载更多
                     getMoreDataFromNet();
                 }
             }
@@ -127,13 +141,15 @@ public class TabDetailPager extends MenuDetailBasePager {
                 CacheUtils.putString(mContext, url, result);
                 //解析数据
                 processData(result);
-                lv_newsdetails.setOnRefreshFinish(true);
+                pull_refresh_listview.onRefreshComplete();
+
             }
 
             @Override
             public void onError(Throwable ex, boolean isOnCallback) {
                 Log.e("TAG", "请求失败" + ex);
-                lv_newsdetails.setOnRefreshFinish(false);
+                pull_refresh_listview.onRefreshComplete();
+
 
             }
 
@@ -176,7 +192,7 @@ public class TabDetailPager extends MenuDetailBasePager {
             news = tableDetailPagerBean.getData().getNews();
             //设置listView的数据
             adapter = new NewsListViewAdapter();
-            lv_newsdetails.setAdapter(adapter);
+            listView.setAdapter(adapter);
         } else {
             //加载更多
             isLoadeMore = false;
@@ -264,13 +280,15 @@ public class TabDetailPager extends MenuDetailBasePager {
                 isLoadeMore = true;
                 //解析数据
                 processData(result);
-                lv_newsdetails.setOnRefreshFinish(false);
+                pull_refresh_listview.onRefreshComplete();
+
             }
 
             @Override
             public void onError(Throwable ex, boolean isOnCallback) {
                 Log.e("TAG", "请求失败" + ex);
-                lv_newsdetails.setOnRefreshFinish(false);
+                pull_refresh_listview.onRefreshComplete();
+
 
             }
 
