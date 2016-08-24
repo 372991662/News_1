@@ -45,10 +45,10 @@ public class NewsDetailActivity extends Activity implements View.OnClickListener
         settings.setJavaScriptEnabled(true);
         //设置双击变大
         settings.setUseWideViewPort(true);
-
-        settings.setTextZoom(100);
-        //增加缩放按钮
+        //设置增大减小按钮
         settings.setBuiltInZoomControls(true);
+        //设置字体大小
+        settings.setTextZoom(100);
         //设置页面加载页面结束监听
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -124,22 +124,22 @@ public class NewsDetailActivity extends Activity implements View.OnClickListener
 
     private void changeTextSize() {
         switch (textSize) {
-            case  0:
+            case 0:
                 settings.setTextZoom(200);
                 break;
-            case  1:
+            case 1:
                 settings.setTextZoom(150);
                 break;
-            case  2:
+            case 2:
                 settings.setTextZoom(100);
                 break;
-            case  3:
+            case 3:
                 settings.setTextZoom(75);
                 break;
-            case  4:
+            case 4:
                 settings.setTextZoom(50);
                 break;
-            case  5:
+            case 5:
                 settings.setTextZoom(25);
                 break;
         }
