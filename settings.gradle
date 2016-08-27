@@ -1,6 +1,3 @@
-include ':app', ':SlidingMenu_library', ':xutils', ':RefreshListView', ':RefreshListView_sample', ':AndroidAndJs'
+include ':app', ':SlidingMenu_library', ':xutils', ':RefreshListView', ':AndroidAndJs', ':JPushExample(514071)', ':ImageLoader_library', ':Image-Loader-sample'
 include ':ViewPagerIndicator_library'
 include ':PullToRefreshlibrary'
-include ':pullToRefreshListFragment'
-include ':pullToRefreshViewPager'
-include ':PullToRefresh_sample'

@@ -19,6 +19,7 @@ public class BaseViewPager {
     public TextView tv_basepager_title;
     public ImageButton ib_basepager_btn;
     public FrameLayout fl_basepager;
+    public ImageButton ib_switch;
 
     public BaseViewPager(Context context) {
         this.mContext = context;
@@ -31,6 +32,7 @@ public class BaseViewPager {
         tv_basepager_title = (TextView) view.findViewById(R.id.tv_basepager_title);
         ib_basepager_btn = (ImageButton) view.findViewById(R.id.ib_basepager_btn);
         fl_basepager = (FrameLayout) view.findViewById(R.id.fl_basepager);
+        ib_switch = (ImageButton) view.findViewById(R.id.ib_switch);
         return view;
     }
 

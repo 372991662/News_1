@@ -5,7 +5,6 @@ package com.atguigu.yangyuanyuan.news.utils;
  */
 public class Constants {
 
-    public static final String BASE_URL = "http://192.168.21.27:8080/web_home";
-    public static final String NEWS_CENTER_PAGER_URL = BASE_URL + "/static/api/news/categories" +
-            ".json";
+    public static final String BASE_URL = "http://192.168.191.1:8080/web_home";
+    public static final String NEWS_CENTER_PAGER_URL = BASE_URL + "/static/api/news/categories.json";
 }

@@ -1,12 +1,16 @@
 package com.atguigu.yangyuanyuan.news.menudatailspager;
 
 import android.content.Context;
+import android.support.design.widget.TabLayout;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.atguigu.yangyuanyuan.news.R;
 import com.atguigu.yangyuanyuan.news.activity.MainActivity;
@@ -14,7 +18,6 @@ import com.atguigu.yangyuanyuan.news.base.MenuDetailBasePager;
 import com.atguigu.yangyuanyuan.news.domain.NewsCenterPagerBean;
 import com.atguigu.yangyuanyuan.news.menudatailspager.tabdetailpager.TopicTabDetailPager;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
-import com.viewpagerindicator.TabPageIndicator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +27,7 @@ import java.util.List;
  */
 public class TopicPager extends MenuDetailBasePager {
     private ViewPager vp_newsmenu_detail;
-    private TabPageIndicator tpi_newsmenu_datail_pager;
+    private TabLayout tabLayout;
     //页签页面的数据
     private List<NewsCenterPagerBean.DataBean.ChildrenBean> newsDataChildren = new ArrayList<>();
     //页签页面的集合
@@ -41,8 +44,7 @@ public class TopicPager extends MenuDetailBasePager {
         View view = View.inflate(mContext, R.layout.topic_menu_detail_pager, null);
 
         vp_newsmenu_detail = (ViewPager) view.findViewById(R.id.vp_newsmenu_detail);
-        tpi_newsmenu_datail_pager = (TabPageIndicator) view.findViewById(R.id
-                .tpi_newsmenu_datail_pager);
+        tabLayout = (TabLayout) view.findViewById(R.id.tablayout);
         ib_tabnext = (ImageButton) view.findViewById(R.id.ib_tabnext);
 
         //设置ImageView的点击事件
@@ -73,10 +75,10 @@ public class TopicPager extends MenuDetailBasePager {
         vp_newsmenu_detail.setAdapter(new NewsMenuDetailAdapter());
 
 
-        //关联ViewPager和TabPagerIndicator
-        tpi_newsmenu_datail_pager.setViewPager(vp_newsmenu_detail);
-        //监听页面变化需要用TabPagerIndicator
-        tpi_newsmenu_datail_pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        //关联ViewPager和tabLayout
+        tabLayout.setupWithViewPager(vp_newsmenu_detail);
+
+        vp_newsmenu_detail.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int
                     positionOffsetPixels) {
@@ -97,6 +99,23 @@ public class TopicPager extends MenuDetailBasePager {
 
             }
         });
+        //设置滑动或者固定
+        tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
+
+
+        for (int i = 0; i < tabLayout.getTabCount(); i++) {
+            TabLayout.Tab tab = tabLayout.getTabAt(i);
+            tab.setCustomView(getTabView(i));
+        }
+    }
+
+    private View getTabView(int position) {
+        View view = LayoutInflater.from(mContext).inflate(R.layout.tab_item, null);
+        TextView tv = (TextView) view.findViewById(R.id.textView);
+        tv.setText(newsDataChildren.get(position).getTitle());
+        ImageView img = (ImageView) view.findViewById(R.id.imageView);
+        img.setImageResource(R.drawable.dot_focus);
+        return view;
     }
 
     //左侧菜单是否可以滑动

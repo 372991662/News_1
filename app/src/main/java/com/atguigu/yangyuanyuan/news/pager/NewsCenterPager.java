@@ -8,6 +8,12 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.TextView;
 
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.HttpHeaderParser;
+import com.android.volley.toolbox.StringRequest;
 import com.atguigu.yangyuanyuan.news.activity.MainActivity;
 import com.atguigu.yangyuanyuan.news.base.BaseViewPager;
 import com.atguigu.yangyuanyuan.news.base.MenuDetailBasePager;
@@ -19,6 +25,7 @@ import com.atguigu.yangyuanyuan.news.menudatailspager.PhotosPager;
 import com.atguigu.yangyuanyuan.news.menudatailspager.TopicPager;
 import com.atguigu.yangyuanyuan.news.utils.CacheUtils;
 import com.atguigu.yangyuanyuan.news.utils.Constants;
+import com.atguigu.yangyuanyuan.news.volley.VolleyManager;
 import com.google.gson.Gson;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 
@@ -26,6 +33,7 @@ import org.xutils.common.Callback;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,19 +76,44 @@ public class NewsCenterPager extends BaseViewPager {
         }
 
         //联网请求数据
-        getDataFromNet();
+        //getDataFromNet();
+        getDataFromNetByVolley();
     }
 
-    private void initListener() {
-        ib_basepager_btn.setOnClickListener(new View.OnClickListener() {
+    //使用Volley联网请求
+    private void getDataFromNetByVolley() {
+        // RequestQueue queue = Volley.newRequestQueue(mContext);
+        StringRequest request = new StringRequest(Request.Method.GET, Constants.NEWS_CENTER_PAGER_URL, new Response.Listener<String>() {
             @Override
-            public void onClick(View v) {
-                MainActivity mainActivity = (MainActivity)mContext;
-                SlidingMenu slidingMenu = mainActivity.getSlidingMenu();
-                slidingMenu.toggle();
+            public void onResponse(String result) {
+                //从网络中解析数据
+                processData(result);
+                //缓存数据  key->value============================================
+                CacheUtils.putString(mContext, Constants.NEWS_CENTER_PAGER_URL, result);
             }
-        });
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError volleyError) {
+                Log.e("TAG", "请求错误" + volleyError.getMessage());
+            }
+        }) {
+            //乱码问题
+            @Override
+            protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                try {
+                    String parsed = new String(response.data, "utf-8");
+                    return Response.success(parsed, HttpHeaderParser.parseCacheHeaders(response));
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+                return super.parseNetworkResponse(response);
+            }
+        };
+
+        //添加到队列
+        VolleyManager.getRequestQueue().add(request);
     }
+
 
     //使用Xutils联网请求数据
     private void getDataFromNet() {
@@ -91,7 +124,7 @@ public class NewsCenterPager extends BaseViewPager {
                 Log.e("TAG", "请求成功");
                 //从网络中解析数据
                 processData(result);
-                //缓存数据  key->value
+                //缓存数据  key->value======================================
                 CacheUtils.putString(mContext, Constants.NEWS_CENTER_PAGER_URL, result);
                 //设置ListView适配器
 
@@ -114,6 +147,17 @@ public class NewsCenterPager extends BaseViewPager {
         });
     }
 
+    private void initListener() {
+        ib_basepager_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity mainActivity = (MainActivity) mContext;
+                SlidingMenu slidingMenu = mainActivity.getSlidingMenu();
+                slidingMenu.toggle();
+            }
+        });
+    }
+
     //解析json数据,显示
     private void processData(String json) {
         NewsCenterPagerBean bean = parsedJson(json);
@@ -130,8 +174,8 @@ public class NewsCenterPager extends BaseViewPager {
         //通过构造将第0条数据传过去
         detialBasePagers.add(new NewsDetailsPager(mContext, menuData.get(0)));
         detialBasePagers.add(new TopicPager(mContext, menuData.get(0)));
-        detialBasePagers.add(new PhotosPager(mContext));
-        detialBasePagers.add(new InteractPager(mContext));
+        detialBasePagers.add(new PhotosPager(mContext, menuData.get(2)));
+        detialBasePagers.add(new InteractPager(mContext,menuData.get(2)));
 
         //传递数据给左侧菜单
         leftmenuFragment.setData(menuData);
@@ -156,5 +200,23 @@ public class NewsCenterPager extends BaseViewPager {
         View rootView = menuDetailBasePager.rootView;
         menuDetailBasePager.initData();
         fl_basepager.addView(rootView);
+
+        if (position == 2) {
+            //图组详情页面
+            ib_switch.setVisibility(View.VISIBLE);
+
+            //设置点击事件
+            ib_switch.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //得到图组对象
+                    PhotosPager pager = (PhotosPager) detialBasePagers.get(2);
+                    //调用图组对象切换方法
+                    pager.switchView(ib_switch);
+                }
+            });
+        } else {
+            ib_switch.setVisibility(View.GONE);
+        }
     }
 }

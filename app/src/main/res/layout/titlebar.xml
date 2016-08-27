@@ -34,11 +34,11 @@
         android:visibility="gone" />
 
     <LinearLayout
-        android:layout_marginRight="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
+        android:layout_marginRight="10dp"
         android:orientation="horizontal">
 
         <ImageButton
@@ -61,5 +61,15 @@
             android:src="@drawable/icon_share"
             android:visibility="gone" />
 
+        <ImageButton
+            android:id="@+id/ib_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/icon_pic_grid_type"
+            android:visibility="gone" />
     </LinearLayout>
+
 </RelativeLayout>

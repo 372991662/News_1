@@ -3,10 +3,13 @@ package com.atguigu.yangyuanyuan.news.menudatailspager.tabdetailpager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -34,6 +37,7 @@ import org.xutils.x;
 
 import java.util.List;
 
+
 /**
  * Created by 杨媛媛 on 2016/8/16 19:20.
  */
@@ -60,6 +64,8 @@ public class TabDetailPager extends MenuDetailBasePager {
     //加载更多数据成功了
     private boolean isLoadeMore = false;
     private NewsListViewAdapter adapter;
+    private MyHandler handler;
+
 
     public TabDetailPager(Context context, NewsCenterPagerBean.DataBean.ChildrenBean childrenBean) {
         super(context);
@@ -144,11 +150,14 @@ public class TabDetailPager extends MenuDetailBasePager {
             //解析数据
             processData(saveJson);
         }
+
         getDataFromNet();
     }
 
 
     public void getDataFromNet() {
+        //--------------解决小红点bug问题
+        lastPosition = 0;
         RequestParams params = new RequestParams(url);
         params.setConnectTimeout(4000);
         x.http().get(params, new Callback.CommonCallback<String>() {
@@ -208,6 +217,7 @@ public class TabDetailPager extends MenuDetailBasePager {
             //设置listView的数据
             adapter = new NewsListViewAdapter();
             lv_newsdetails.setAdapter(adapter);
+
         } else {
             //加载更多
             isLoadeMore = false;
@@ -218,10 +228,19 @@ public class TabDetailPager extends MenuDetailBasePager {
         }
 
 
+        //---------------------------------设置轮播图4000切换
+        if (handler == null) {
+            handler = new MyHandler();
+        }
+
+        //移除上次消息
+        handler.removeCallbacksAndMessages(null);
+        handler.sendEmptyMessageDelayed(1, 4000);
+        Log.e("TAG", "发送延迟消息");
     }
 
+    //监听页面变化
     private void setPointData() {
-        //监听页面变化
         vp_newsdetails.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 
             @Override
@@ -245,9 +264,40 @@ public class TabDetailPager extends MenuDetailBasePager {
                 lastPosition = position;
             }
 
+            private boolean isDragging = false;
+
             @Override
             public void onPageScrollStateChanged(int state) {
-
+              /*  switch (state) {
+                    //拖拽
+                    case ViewPager.SCROLL_STATE_DRAGGING:
+                        handler.removeCallbacksAndMessages(null);
+                        break;
+                    //空闲
+                    case ViewPager.SCROLL_STATE_IDLE:
+                        handler.removeCallbacksAndMessages(null);
+                        handler.sendEmptyMessageDelayed(1, 4000);
+                        break;
+                    //惯性
+                    case ViewPager.SCROLL_STATE_SETTLING:
+                        handler.removeCallbacksAndMessages(null);
+                        handler.sendEmptyMessageDelayed(1, 4000);
+                        break;
+                }*/
+                if (state == ViewPager.SCROLL_STATE_DRAGGING) {
+                    isDragging = true;
+                    handler.removeCallbacksAndMessages(null);
+                }
+                if (state == ViewPager.SCROLL_STATE_SETTLING && isDragging) {
+                    isDragging = false;
+                    handler.removeCallbacksAndMessages(null);
+                    handler.sendEmptyMessageDelayed(1, 4000);
+                }
+                if (state == ViewPager.SCROLL_STATE_IDLE && isDragging) {
+                    isDragging = false;
+                    handler.removeCallbacksAndMessages(null);
+                    handler.sendEmptyMessageDelayed(1, 4000);
+                }
             }
         });
 
@@ -401,12 +451,41 @@ public class TabDetailPager extends MenuDetailBasePager {
             container.addView(iv);
             //联网请求图片
             x.image().bind(iv, Constants.BASE_URL + topnews.get(position).getTopimage());
+
+            //iv的触摸事件(发送延迟消息)
+            iv.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            handler.removeCallbacksAndMessages(null);
+                            break;
+                        case MotionEvent.ACTION_UP:
+                            handler.removeCallbacksAndMessages(null);
+                            handler.sendEmptyMessageDelayed(1, 4000);
+                            break;
+                    }
+                    return true;
+                }
+            });
             return iv;
         }
 
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
             container.removeView((View) object);
+        }
+    }
+
+
+    class MyHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            if (msg.what == 1) {
+                vp_newsdetails.setCurrentItem((vp_newsdetails.getCurrentItem() + 1) % topnews.size());
+                handler.sendEmptyMessageDelayed(1, 4000);
+            }
         }
     }
 }

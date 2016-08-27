@@ -8,9 +8,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
-
+<!--
         <com.viewpagerindicator.TabPageIndicator
             android:id="@+id/tpi_newsmenu_datail_pager"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"/>-->
+
+        <android.support.design.widget.TabLayout
+            style="@style/MyCustomTabLayout"
+            android:id="@+id/tablayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
