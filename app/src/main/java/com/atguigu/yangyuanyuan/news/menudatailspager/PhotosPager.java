@@ -1,10 +1,12 @@
 package com.atguigu.yangyuanyuan.news.menudatailspager;
 
 import android.content.Context;
+import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageButton;
@@ -20,6 +22,7 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.StringRequest;
 import com.atguigu.yangyuanyuan.news.R;
+import com.atguigu.yangyuanyuan.news.activity.ShowImageActivity;
 import com.atguigu.yangyuanyuan.news.base.MenuDetailBasePager;
 import com.atguigu.yangyuanyuan.news.domain.NewsCenterPagerBean;
 import com.atguigu.yangyuanyuan.news.domain.PhotosMenuDetailPagerBean;
@@ -54,7 +57,25 @@ public class PhotosPager extends MenuDetailBasePager {
         View view = View.inflate(mContext, R.layout.photos_menudetail_pager, null);
         listview = (ListView) view.findViewById(R.id.listview);
         gridview = (GridView) view.findViewById(R.id.gridview);
+
+        //设置listView的点击事件
+        listview.setOnItemClickListener(new MyItemClickListener());
         return view;
+    }
+
+    class MyItemClickListener implements AdapterView.OnItemClickListener {
+
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            //得到图片的路径
+            PhotosMenuDetailPagerBean.DataEntity.NewsEntity newsEntity = news.get(position);
+            String imageUrl = Constants.BASE_URL + newsEntity.getLargeimage();
+
+            //跳转到ShowImage界面
+            Intent intent = new Intent(mContext, ShowImageActivity.class);
+            intent.putExtra("url", imageUrl);
+            mContext.startActivity(intent);
+        }
     }
 
     @Override
@@ -168,7 +189,7 @@ public class PhotosPager extends MenuDetailBasePager {
             ImageLoader.ImageListener imageListener = new ImageLoader.ImageListener() {
                 @Override
                 public void onErrorResponse(VolleyError volleyError) {
-                    //如果出错，则说明都不显示（简单处理），最好准备一张出错图片
+                    //如果出错，则说明都不显示（简单处理)
                     holder.iv_icon.setImageResource(R.drawable.home_scroll_default);
                 }
 

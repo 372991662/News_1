@@ -31,8 +31,10 @@ import com.atguigu.yangyuanyuan.news.utils.CacheUtils;
 import com.atguigu.yangyuanyuan.news.utils.Constants;
 import com.atguigu.yangyuanyuan.news.utils.NetCacheUtils;
 import com.atguigu.yangyuanyuan.news.volley.VolleyManager;
-import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.assist.ImageScaleType;
+import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 
 import java.io.UnsupportedEncodingException;
 import java.util.List;
@@ -87,6 +89,8 @@ public class InteractPager extends MenuDetailBasePager {
         super(context);
         this.dataBean = dataBean;
         bitmapCacheUtils = new BitmapCacheUtils(handler);
+
+
     }
 
     @Override
@@ -165,6 +169,24 @@ public class InteractPager extends MenuDetailBasePager {
 
     class ListViewAdapter extends BaseAdapter {
 
+        private DisplayImageOptions options;
+
+        public ListViewAdapter() {
+
+            //初始化ImageLoader
+            options = new DisplayImageOptions.Builder()
+                    .showImageOnLoading(R.drawable.home_scroll_default)
+                    .showImageForEmptyUri(R.drawable.home_scroll_default)
+                    .showImageOnFail(R.drawable.home_scroll_default)
+                    .cacheInMemory(true)
+                    .cacheOnDisk(true)
+                    .considerExifParams(true)
+                    .bitmapConfig(Bitmap.Config.RGB_565)
+                    .imageScaleType(ImageScaleType.EXACTLY_STRETCHED)
+                    .displayer(new RoundedBitmapDisplayer(10))
+                    .build();
+        }
+
         @Override
         public int getCount() {
             return news.size();
@@ -215,11 +237,14 @@ public class InteractPager extends MenuDetailBasePager {
                     .into(holder.iv_icon);*/
 
             //使用Glide请求图片
-            Glide.with(mContext)
+         /*   Glide.with(mContext)
                     .load(imageUrl)
                     .placeholder(R.drawable.home_scroll_default)
                     .error(R.drawable.home_scroll_default)
-                    .into(holder.iv_icon);
+                    .into(holder.iv_icon);*/
+
+            //使用ImageLoder加载图片
+            com.nostra13.universalimageloader.core.ImageLoader.getInstance().displayImage(imageUrl, holder.iv_icon, options);
             return convertView;
         }
 
